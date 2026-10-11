@@ -2,6 +2,10 @@
 
 `/flow` and `/flow-explain` turn a scenario, a question, or a diff into a guided walk through the code, one step at a time. It's for reviewing AI-written or unfamiliar code faster, and for juniors who want a tutor to walk them through a codebase.
 
+![The flow explainer pane: a vertical list of steps, the current step's explanation and code, and jump buttons](docs/flow-explainer.png)
+
+*The pane's layout with a sample flow (`POST /orders`). The image is a mockup of the layout, not a live capture.*
+
 ```
 /flow how does POST /orders reach the database?
 /flow-explain explain the diff of this MR and why it works like this
