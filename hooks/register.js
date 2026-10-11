@@ -9,7 +9,7 @@
 // draws it in a pane.
 
 const PANE = 'flow-explainer'
-const DEFAULT_PACE = 6 // seconds per step while playing
+const DEFAULT_PACE = 6 // seconds per step in auto mode
 const CODE_LIMIT = 2000 // characters of code shown per step
 const WINDOW = 9 // rows in the vertical step list
 const MAX_CALLS = 9 // jump targets per step, one digit key each
@@ -36,7 +36,7 @@ const COMMANDS = [
 let platform // 'windows' | 'posix', cached until the next reload
 let flow = null // { title, request, assumptions, steps: [...] } once a flow is ready
 let index = 0 // current step
-let playing = true // auto-advance on or off
+let playing = false // auto mode: off by default, so stepping is manual until 'p' turns it on
 let elapsed = 0 // seconds spent on the current step
 let pace = DEFAULT_PACE
 let lineMode = false // build the next flow line by line instead of by function
@@ -299,7 +299,7 @@ async function buildFlow($, question, jump = false) {
   lastRequest = question
   flow = null
   index = 0
-  playing = true
+  playing = false
   elapsed = 0
   problem = ''
   notice = ''
@@ -585,7 +585,7 @@ export function register(on) {
       } else {
         index = 0
         elapsed = 0
-        playing = true
+        playing = false
       }
     } catch (err) {
       flow = null
@@ -680,7 +680,7 @@ export function register(on) {
         flexDirection: 'row',
         columnGap: 2,
         children: [
-          press('play', playing ? 'p: pause' : 'p: play', 'p', () => {
+          press('play', playing ? 'p: manual' : 'p: auto', 'p', () => {
             if (!flow) return
             if (index === flow.steps.length - 1 && !playing) index = 0
             playing = !playing
@@ -747,7 +747,7 @@ export function register(on) {
       const step = flow.steps[index]
       const filled = Math.round((index + 1) * 20 / n)
       const bar = '█'.repeat(filled) + '·'.repeat(20 - filled)
-      const status = playing ? 'playing, next in ' + (pace - elapsed) + 's' : 'paused'
+      const status = playing ? 'auto, next in ' + (pace - elapsed) + 's' : 'manual'
       children.push(Text({ dimColor: true, children: [status + '   ' + (index + 1) + '/' + n + '   ' + bar] }))
 
       // The whole flow as a vertical list, with a window around the current step

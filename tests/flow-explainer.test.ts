@@ -145,14 +145,20 @@ test('the timer walks the steps and stops on the last one', async ($, on) => {
   files.set(pathFrom(submitted[0]), JSON.stringify(FLOW))
   await $.turn.complete({ turnId: 't1', answer: '', durationMs: 1, isAborted: false, usage: null } as any)
 
-  await clock.advance(2000)
+  // Flows start in manual mode, so switch auto progress on first
   let ui = await $.ui.mount({ ...PANE, surface: 'terminal' } as any)
+  expect(await ui.find({ type: 'Text', text: /^manual/ })).toBeDefined()
+  await ui.press({ key: 'play' })
+  await ui.unmount()
+
+  await clock.advance(2000)
+  ui = await $.ui.mount({ ...PANE, surface: 'terminal' } as any)
   expect(await ui.find({ type: 'Text', text: /^Step 2 of 2/ })).toBeDefined()
   await ui.unmount()
 
   await clock.advance(10000)
   ui = await $.ui.mount({ ...PANE, surface: 'terminal' } as any)
-  expect(await ui.find({ type: 'Text', text: /paused/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /manual/ })).toBeDefined()
   await ui.unmount()
 })
 
@@ -186,14 +192,13 @@ test('s saves the flow with the step reached, into the saved folder', async ($, 
   const files = new Map<string, string>()
   const { submitted } = setup(on, { files })
   const clock = mock.clock(on)
-  await $.session.start({ surface: 'terminal', isInteractive: true, cwd: 'C:\work' } as any)
+  await $.session.start({ surface: 'terminal', isInteractive: true, cwd: 'C:\\work' } as any)
   await $.command.run({ command: 'flow', args: 'how does POST /orders reach the database --pace=2' } as any)
   await clock.advance(1000) // the timer sends the queued prompt
   files.set(pathFrom(submitted[0]), JSON.stringify(FLOW))
   await $.turn.complete({ turnId: 't1', answer: '', durationMs: 1, isAborted: false, usage: null } as any)
-  await clock.advance(2000) // reach step 2
-
   const ui = await $.ui.mount({ ...PANE, surface: 'terminal' } as any)
+  await ui.press({ key: 'next' }) // step 2, by hand
   await ui.press({ key: 'save' })
   await ui.unmount()
 
@@ -217,7 +222,7 @@ test('/flow-resume <name> reopens a saved flow paused on its step', async ($, on
 
   const ui = await $.ui.mount({ ...PANE, surface: 'terminal' } as any)
   expect(await ui.find({ type: 'Text', text: /^Step 2 of 2/ })).toBeDefined()
-  expect(await ui.find({ type: 'Text', text: /^paused/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /^manual/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /Resumed at step 2 of 2/ })).toBeDefined()
   await ui.unmount()
 })

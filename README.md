@@ -17,7 +17,7 @@
 
 ## Save and resume
 
-Press `s` to save a flow. It's written to `~/.claude/flow-explainer/saved/<title>-<id>.json`, with the step you're on. Saving again updates the same file. Saved flows are plain JSON, so you can commit them, send them to a teammate, or review them later. A resumed flow starts paused on its saved step.
+Press `s` to save a flow. It's written to `~/.claude/flow-explainer/saved/<title>-<id>.json`, with the step you're on. Saving again updates the same file. Saved flows are plain JSON, so you can commit them, send them to a teammate, or review them later. A resumed flow opens on its saved step, in manual mode.
 
 ## How it works
 
@@ -32,7 +32,7 @@ Press `s` to save a flow. It's written to `~/.claude/flow-explainer/saved/<title
 
 | Key | Action |
 |---|---|
-| `p` | pause / play (auto-advances every few seconds) |
+| `p` | switch auto progress on or off. Off by default: you step with `n` and `b` |
 | `n` / `b` | next / back step |
 | `a` | ask a question about the current step; the answer comes back in the main chat |
 | `f` | new flow from a scenario |
@@ -61,7 +61,7 @@ When Claude builds a flow, each step can list the calls it makes that have defin
 
 - `--lines`: one step per statement, instead of per function.
 - `--functions`: one step per function (the default).
-- `--pace=N`: seconds per step while playing (minimum 2, default 6).
+- `--pace=N`: seconds per step in auto mode (minimum 2, default 6). Auto mode is off unless you press `p`.
 
 ## Requirements
 
