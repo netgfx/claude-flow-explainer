@@ -1,6 +1,6 @@
 {
   "name": "flow-explainer-mod",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "/flow and /flow-explain: turn a scenario, a question or a diff into a guided, step-by-step tour of the code, with plain-language and technical explanations",
   "author": { "name": "djmid" }
 }

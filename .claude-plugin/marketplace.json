@@ -1,0 +1,18 @@
+{
+  "name": "flow-explainer",
+  "owner": { "name": "djmid" },
+  "metadata": {
+    "description": "Guided, step-by-step tours of the code for Claude Code"
+  },
+  "plugins": [
+    {
+      "name": "flow-explainer-mod",
+      "source": "./",
+      "description": "/flow and /flow-explain: turn a scenario, a question or a diff into a guided, step-by-step tour of the code, with plain-language and technical explanations",
+      "author": { "name": "djmid" },
+      "repository": "https://github.com/netgfx/claude-flow-explainer",
+      "license": "MIT",
+      "category": "development"
+    }
+  ]
+}

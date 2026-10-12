@@ -6,6 +6,30 @@
 
 *The pane's layout with a sample flow (`POST /orders`). The image is a mockup of the layout, not a live capture.*
 
+## Install
+
+This repo is a Claude Code plugin marketplace. In Claude Code, run:
+
+```
+/plugin install flow-explainer-mod --marketplace netgfx/claude-flow-explainer
+```
+
+Or add the marketplace first, then install from it:
+
+```
+/plugin marketplace add netgfx/claude-flow-explainer
+/plugin install flow-explainer-mod@flow-explainer
+```
+
+From a terminal, the same steps are `claude plugin marketplace add netgfx/claude-flow-explainer` and `claude plugin install flow-explainer-mod@flow-explainer`. To get new versions later, run `/plugin marketplace update flow-explainer`.
+
+### Requirements
+
+- Claude Code v2.1.287 or later.
+- Built and tested on Windows. Path and platform handling covers macOS too, but macOS is not yet tested. The flow is built by Claude, so no extra API key is needed.
+
+## Usage
+
 ```
 /flow how does POST /orders reach the database?
 /flow-explain explain the diff of this MR and why it works like this
@@ -63,11 +87,6 @@ When Claude builds a flow, each step can list the calls it makes that have defin
 - `--functions`: one step per function (the default).
 - `--pace=N`: seconds per step in auto mode (minimum 2, default 6). Auto mode is off unless you press `p`.
 
-## Requirements
-
-- Claude Code v2.1.287 or later.
-- Built and tested on Windows. Path and platform handling covers macOS too, but macOS is not yet tested. The flow is built by Claude, so no extra API key is needed.
-
 ## What the mod does (for reviewers)
 
 - Reads its own flow files and checks they exist: `$.fs.exists`, `$.fs.read` (only under `~/.claude/flow-explainer/flows/`).
@@ -76,9 +95,9 @@ When Claude builds a flow, each step can list the calls it makes that have defin
 - Draws the pane and status, and shows a toast if the pane can't be placed: `$.ui.*`, `$.command.register`, `$.clock.every`.
 - No network, no processes, no writes, no shell.
 
-## Load it
+## Load from a local checkout
 
-PowerShell:
+For development, load the plugin straight from a clone instead of installing it. PowerShell:
 
 ```powershell
 claude --plugin-dir "D:\Projects\Projects\claude-plugins\flow-explainer-mod"
