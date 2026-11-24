@@ -1,7 +1,7 @@
 import { expect, mock, test } from 'claude-code/testing'
 
 const PANE = {
-  plugin: 'flow-explainer-mod',
+  plugin: 'powermods-flow-explainer',
   component: 'Pane',
   requestId: 'flow-explainer',
   viewport: { columns: 100, rows: 40 },
