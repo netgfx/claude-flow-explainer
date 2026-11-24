@@ -7,6 +7,7 @@
   "homepage": "https://github.com/netgfx/claude-flow-explainer",
   "repository": "https://github.com/netgfx/claude-flow-explainer",
   "license": "MIT",
+  "privacyPolicyUrl": "https://github.com/netgfx/claude-flow-explainer/blob/main/PRIVACY.md",
   "keywords": ["mod", "code-tour", "code-review", "onboarding", "explain", "walkthrough"],
   "network": { "hosts": [] }
 }
