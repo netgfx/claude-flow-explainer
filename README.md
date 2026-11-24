@@ -1,6 +1,8 @@
-# flow-explainer-mod
+# Flow Explainer
 
 `/flow` and `/flow-explain` turn a scenario, a question, or a diff into a guided walk through the code, one step at a time. It's for reviewing AI-written or unfamiliar code faster, and for juniors who want a tutor to walk them through a codebase.
+
+> **Claude Code only.** Runs in the Claude Code CLI (v2.1.287+), the Desktop app's Code tab (v2.1.286+) and the VS Code extension (v2.1.299+ for panes). It does nothing in claude.ai chat or Cowork.
 
 ![The flow explainer pane: a vertical list of steps, the current step's explanation and code, and jump buttons](docs/flow-explainer.png)
 
@@ -8,25 +10,27 @@
 
 ## Install
 
-This repo is a Claude Code plugin marketplace. In Claude Code, run:
-
-```
-/plugin install flow-explainer-mod --marketplace netgfx/claude-flow-explainer
-```
-
-Or add the marketplace first, then install from it:
+This repo is a Claude Code plugin marketplace. In Claude Code, add the marketplace, then install the plugin from it:
 
 ```
 /plugin marketplace add netgfx/claude-flow-explainer
-/plugin install flow-explainer-mod@flow-explainer
+/plugin install powermods-flow-explainer@flow-explainer
 ```
 
-From a terminal, the same steps are `claude plugin marketplace add netgfx/claude-flow-explainer` and `claude plugin install flow-explainer-mod@flow-explainer`. To get new versions later, run `/plugin marketplace update flow-explainer`.
+Or do both in one step (Claude Code v2.1.275 or later):
+
+```
+/plugin install powermods-flow-explainer --marketplace netgfx/claude-flow-explainer
+```
+
+From a terminal, the same steps are `claude plugin marketplace add netgfx/claude-flow-explainer` and `claude plugin install powermods-flow-explainer@flow-explainer`. To get new versions later, run `/plugin marketplace update flow-explainer`.
+
+**Upgrading from `flow-explainer-mod`.** The plugin was renamed from `flow-explainer-mod` to `powermods-flow-explainer` in 0.3.0. The marketplace's `renames` entry moves existing installs to the new name. If Claude Code then reports that the plugin isn't cached, run `/plugin install powermods-flow-explainer@flow-explainer` once. Saved flows are kept: they live in `~/.claude/flow-explainer`, which doesn't depend on the plugin name.
 
 ### Requirements
 
-- Claude Code v2.1.287 or later.
-- Built and tested on Windows. Path and platform handling covers macOS too, but macOS is not yet tested. The flow is built by Claude, so no extra API key is needed.
+- Claude Code v2.1.287 or later (Desktop Code tab v2.1.286 or later).
+- Built and tested on Windows. Path and platform handling covers macOS and Linux too, and the tests run on Windows and Linux. The flow is built by Claude in your session, so no extra API key is needed.
 
 ## Usage
 
@@ -87,36 +91,60 @@ When Claude builds a flow, each step can list the calls it makes that have defin
 - `--functions`: one step per function (the default).
 - `--pace=N`: seconds per step in auto mode (minimum 2, default 6). Auto mode is off unless you press `p`.
 
-## What the mod does (for reviewers)
+## Data, network and permissions
 
-- Reads its own flow files and checks they exist: `$.fs.exists`, `$.fs.read` (only under `~/.claude/flow-explainer/flows/`).
-- Reads the home folder and OS to build that path: `$.env.get` (`USERPROFILE`, `HOME`, `OS`), `$.session.cwd`.
-- Starts a turn in the main session with the built prompt or a question about a step: `$.prompt.submit`. A timer sends it, since a command hook can't start a turn.
-- Draws the pane and status, and shows a toast if the pane can't be placed: `$.ui.*`, `$.command.register`, `$.clock.every`.
-- No network, no processes, no writes, no shell.
+Everything stays on your machine. See [PRIVACY.md](PRIVACY.md) for the privacy statement.
+
+**Files it reads and writes**
+
+- Writes saved flows to `~/.claude/flow-explainer/saved/<title>-<id>.json` when you press `s`, and again after a resumed flow is updated (`saveFlow` in `hooks/register.js`). A saved flow holds the flow's steps, the step you were on, the project folder it was saved from, and a SHA-256 digest of each step's file.
+- Reads the flow files in `~/.claude/flow-explainer/flows/` that Claude writes for each build, and lists and reads `~/.claude/flow-explainer/saved/` for `/flow-resume` and the `o` picker.
+- Reads the project files a saved flow's steps point to, only to compare their SHA-256 digests when you save or resume a flow. File contents are not stored, only the digests.
+- Reads the environment variables `USERPROFILE`, `HOME` and `OS`, and the session's working folder, to build those paths.
+- These folders are outside your project, so nothing lands in your repo. To delete everything the mod keeps, delete the `~/.claude/flow-explainer` folder.
+
+**What it sends to Claude**
+
+- `/flow`, `/flow-explain`, `/flow-resume` and the pane's keys (`f` new flow, `r` rebuild, `a` ask, `1`-`9` jump into a call, picking a saved flow whose code changed) queue one prompt, which a one-second timer sends to the main session with `$.prompt.submit`. A command hook can't start a turn itself, which is why a timer sends it. Nothing is sent without one of those actions.
+- The prompt is not sent as your own words: Claude Code tells Claude it comes from this mod. It runs as a normal turn with your current model and effort, on your own Claude plan or API key.
+- The prompts are built in `hooks/register.js`: `buildPrompt` (build a flow), `buildUpdatePrompt` (update a saved flow whose code changed) and `askAboutStep` (a question about one step). Each one starts with `[flow-explainer]` and tells Claude to work read-only: not to edit project files and not to run commands that change state. The one file Claude is asked to write is the flow file under `~/.claude/flow-explainer`.
+- The build prompt asks Claude to read git (`git diff`, `git log`, `git show`) for a diff, and to follow symlinks, linked folders and additional workspaces into other projects, for example a database project linked into a backend. If you link private repos into a project, Claude may read them while it builds the flow. Claude does this with its normal tools, under your permission settings.
+
+**What it doesn't do**
+
+- No network calls: `network.hosts` in `plugin.json` is empty.
+- Starts no programs and runs no shell.
+- Doesn't watch, approve, deny or change tool calls, and doesn't change your prompts or the system prompt.
+- Keeps nothing in `$.store`, sets no environment variables and reads no settings.
+
+**Hooks it registers:** `session.start` (registers the three commands and the timer), `command.run` for `/flow`, `/flow-explain` and `/flow-resume`, `turn.complete` (reads the flow file when the turn that builds it ends) and `ui.render` for its own pane.
 
 ## Load from a local checkout
 
 For development, load the plugin straight from a clone instead of installing it. PowerShell:
 
 ```powershell
-claude --plugin-dir "D:\Projects\Projects\claude-plugins\flow-explainer-mod"
-claude plugin validate "D:\Projects\Projects\claude-plugins\flow-explainer-mod"
-Set-Location "D:\Projects\Projects\claude-plugins\flow-explainer-mod"; claude plugin test
+claude --plugin-dir .\claude-flow-explainer
+claude plugin validate .\claude-flow-explainer
+Set-Location .\claude-flow-explainer; claude plugin test
 ```
 
 Bash / Zsh:
 
 ```bash
-claude --plugin-dir ~/mods/flow-explainer-mod
-claude plugin validate ~/mods/flow-explainer-mod
-cd ~/mods/flow-explainer-mod && claude plugin test
+claude --plugin-dir ~/mods/claude-flow-explainer
+claude plugin validate ~/mods/claude-flow-explainer
+cd ~/mods/claude-flow-explainer && claude plugin test
 ```
 
 Git Bash rewrites slash commands. Run `claude -p "/flow"` from PowerShell, or prefix it with `MSYS_NO_PATHCONV=1`.
 
 ## Tests
 
-`claude plugin test` runs `tests/flow-explainer.test.ts`: the build prompt for `/flow` and `--lines`, Windows and POSIX file paths, a finished flow drawn on both surfaces, the auto-advance timer, an aborted turn, and the bare `/flow` input.
+`claude plugin test` runs `tests/flow-explainer.test.ts`: the build prompt for `/flow` and `--lines`, a finished flow drawn on both surfaces, the auto-advance timer, an aborted turn, the bare `/flow` input, saving, resuming, the change check on resume, and jumping into a call. Each test runs twice, with Windows paths and with POSIX paths, and the suite passes on Windows and Linux. CI runs it on both, together with `claude plugin validate --profile directory --strict`.
 
-Tested on Claude Code 2.1.296.
+Tested on Claude Code 2.1.331.
+
+## License
+
+[MIT](LICENSE)
