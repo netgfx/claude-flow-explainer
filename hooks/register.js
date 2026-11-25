@@ -243,7 +243,7 @@ function flowFromSaved(data) {
 }
 
 function parseJson(text) {
-  return JSON.parse(String(text).replace(/^﻿/, ''))
+  return JSON.parse(String(text).replace(/^\uFEFF/, ''))
 }
 
 // SHA-256 of a file's text, with line endings normalized so CRLF and LF match
