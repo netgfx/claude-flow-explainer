@@ -95,6 +95,22 @@ When Claude builds a flow, each step can list the calls it makes that have defin
 
 Everything stays on your machine. See [PRIVACY.md](PRIVACY.md) for the privacy statement.
 
+In short, for the directory's checks:
+
+- **Files it writes:** only saved flows, as JSON, at `~/.claude/flow-explainer/saved/<title>-<id>.json`. The path is your home folder, the fixed folders `.claude/flow-explainer/saved`, the flow's title reduced to `a-z`, `0-9` and `-`, a time-based id and `.json`; or the same saved file again when you save or update a flow you resumed. It never writes inside your project, and none of these files is a build, start-up, settings or instructions file.
+- **What it puts in prompts it submits:** three kinds of prompt, each starting with `[flow-explainer]`, sent with `$.prompt.submit` into your own session (not as your words, and only after a `/flow`, `/flow-explain` or `/flow-resume` command or a key in the pane):
+  - *Build a flow* (`buildPrompt`): the request you typed, the granularity (by function or line by line), fixed instructions to trace the code read-only and follow linked folders, the path of the flow file to write under `~/.claude/flow-explainer/flows/`, and the JSON shape to write.
+  - *Update a saved flow* (`buildUpdatePrompt`): the saved flow's title and original request, the relative paths of the files that changed since it was saved, the saved file's path, fixed update instructions and the JSON shape.
+  - *Ask about a step* (`askAboutStep`): the flow's title, the step's number, title and location, the step's plain-language explanation, and the question you typed.
+  No file contents, environment values or other data go into these prompts. Claude reads your code itself, with its normal tools.
+- **Programs it runs:** none.
+- **Hosts it contacts:** none.
+- **Hooks:**
+  - `session.start`: registers `/flow`, `/flow-explain` and `/flow-resume`, and starts the one-second timer that sends a queued prompt and advances auto mode. Changes nothing.
+  - `command.run` for `/flow`, `/flow-explain` and `/flow-resume`: answers the mod's own commands. Changes nothing else.
+  - `turn.complete`: when a flow is being built, reads the flow file Claude wrote. Passes the event on unchanged.
+  - `ui.render` for its own pane: draws the pane. Leaves every other drawing alone.
+
 **Files it reads and writes**
 
 - Writes saved flows to `~/.claude/flow-explainer/saved/<title>-<id>.json` when you press `s`, and again after a resumed flow is updated (`saveFlow` in `hooks/register.js`). A saved flow holds the flow's steps, the step you were on, the project folder it was saved from, and a SHA-256 digest of each step's file.
