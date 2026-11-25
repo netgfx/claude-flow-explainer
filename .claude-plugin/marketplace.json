@@ -3,14 +3,14 @@
   "owner": { "name": "Michael Dobekidis", "email": "djmid71@gmail.com", "url": "https://github.com/netgfx" },
   "metadata": {
     "description": "Guided, step-by-step tours of the code for Claude Code",
-    "version": "0.3.0"
+    "version": "0.3.1"
   },
   "plugins": [
     {
       "name": "powermods-flow-explainer",
       "source": "./",
       "description": "/flow and /flow-explain: turn a scenario, a question or a diff into a guided, step-by-step tour of the code, with plain-language and technical explanations",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "author": { "name": "Michael Dobekidis", "email": "djmid71@gmail.com", "url": "https://github.com/netgfx" },
       "homepage": "https://github.com/netgfx/claude-flow-explainer",
       "repository": "https://github.com/netgfx/claude-flow-explainer",
